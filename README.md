@@ -98,11 +98,6 @@ docker compose logs -f      # view logs
 docker compose down         # stop
 ```
 
-## Oracle Cloud Always Free (recommended free option)
-
-The dedicated walkthrough (instance creation, Docker, deploy, DB migration, backups) lives in
-[DEPLOYMENT-ORACLE.md](DEPLOYMENT-ORACLE.md).
-
 ## Migrating an existing local database to the server
 
 The whole state (items, categories, rules, next list) lives in one SQLite file (`shopping.db`). To move it:

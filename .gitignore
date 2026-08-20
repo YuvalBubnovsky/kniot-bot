@@ -4,3 +4,5 @@ venv
 *.pyc
 data
 shopping.db
+DEPLOYMENT-ORACLE.md
+cloud-init-oracle.sh

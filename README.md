@@ -100,67 +100,8 @@ docker compose down         # stop
 
 ## Oracle Cloud Always Free (recommended free option)
 
-The Always Free tier gives you a permanent ARM instance (up to 2 OCPU / 12 GB RAM, 200 GB disk) that stays awake 24/7 — no sleep timeout, unlike Render's free tier.
-
-### 1. Create the instance
-
-1. Sign up at [oracle.com/cloud/free](https://www.oracle.com/cloud/free/) (card required for verification, you're never charged).
-2. Console → **Compute → Instances → Create instance**:
-   - Image: **Ubuntu 24.04**
-   - Shape: **Edit → Ampere A1 (ARM) → `VM.Standard.A1.Flex`**, set **2 OCPUs / 12 GB memory** (the always-free envelope as of Aug 2026)
-   - Boot volume: **100 GB** is fine
-   - **Add your SSH public key** (download/save the private key if you let Oracle generate it)
-3. **Capacity errors ("Out of host capacity") are common** — retry in another Availability Domain, or a less busy region (avoid US East/Ashburn, Frankfurt), or retry periodically with [a retry script](https://codeeasy.in/articles/oracle-cloud-free-tier-ultimate-guide/).
-4. Network: the default VCN/security list is fine. **No inbound ports needed** — the bot only *polls* Telegram outbound; keep port 22 (SSH) to yourself.
-
-### 2. Connect and install Docker
-
-```bash
-ssh -i ~/.ssh/id_ed25519 ubuntu@<instance_ip>
-
-sudo apt update && sudo apt install -y ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo usermod -aG docker $USER
-```
-
-Log out (`exit`) and back in, so `docker` works without `sudo`.
-
-### 3. Deploy the bot
-
-```bash
-git clone <your-repo-url> && cd <repo>
-cp .env.example .env
-nano .env                    # paste your BOT_TOKEN
-mkdir -p data
-docker compose up -d --build
-docker compose logs -f       # expect "Bot started"; on success you'll see getUpdates activity
-```
-
-That's it — the bot runs 24/7 (the compose file already has `restart: unless-stopped`, and Docker starts on boot by default).
-
-### 4. Migrate your current local DB (do this BEFORE the first `docker compose up`)
-
-```bash
-# on YOUR local machine, bot stopped (Ctrl+C):
-scp shopping.db ubuntu@<instance_ip>:/home/ubuntu/<repo>/data/shopping.db
-```
-
-Then start the containers once, verify with `docker compose logs -f` and by sending `רשימה` in Telegram.
-
-If the bot already ran once on the server without the DB: `docker compose down`, copy the file as above, `docker compose up -d`.
-
-### 5. Backups (recommended, free)
-
-```bash
-# on your machine:
-scp ubuntu@<instance_ip>:/home/ubuntu/<repo>/data/shopping.db ./shopping-backup.db
-```
-
-That single file is your whole state. Restoring is the same command in reverse.
+The dedicated walkthrough (instance creation, Docker, deploy, DB migration, backups) lives in
+[DEPLOYMENT-ORACLE.md](DEPLOYMENT-ORACLE.md).
 
 ## Migrating an existing local database to the server
 
